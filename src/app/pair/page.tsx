@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { displayToken, shortenAddress, toAddressLink, toTxLink } from '../utils';
+import { displayToken, shortenAddress, toAddressLink, toTxLink } from '../../utils';
 
 type Swap = {
   tx_id: number
