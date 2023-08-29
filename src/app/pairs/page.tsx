@@ -5,11 +5,10 @@ import { useState, useEffect } from 'react';
 import { displayToken, shortenAddress, toAddressLink, toTxLink } from '../../utils';
 
 type Pair = {
-  address: string,
-  token0: string,
-  token1: string,
-  startBlock: number,
-  lastBlock: number,
+  chainId: number,
+  pairAddress: string,
+  token0Symbol: string,
+  token1Symbol: string,
 };
 
 const Home = () => {
@@ -28,21 +27,17 @@ const Home = () => {
         <thead>
           <tr>
             <th>Pair</th>
-            <th className='text-right'>Deploy Block</th>
-            <th className='text-right'>Last Updated</th>
           </tr>
         </thead>
         <tbody>
           {pairsData.map((pair: Pair) => {
-            const { address, token0, token1, startBlock, lastBlock } = pair;
-            const pairDisplayName = `${token0} / ${token1}`;
-            const pairLink = `/pair?quote=${token0}&base=${token1}&pool=V2`;
+            const { chainId, pairAddress, token0Symbol, token1Symbol } = pair;
+            const pairDisplayName = `${token0Symbol} / ${token1Symbol}`;
+            const pairLink = `/pair?chain=${chainId}&pair=${pairAddress}`;
 
             return (
-              <tr key={address}>
+              <tr key={pairAddress}>
                 <td><Link href={pairLink}>{pairDisplayName}</Link></td>
-                <td className='text-right'>{startBlock}</td>
-                <td className='text-right'>{lastBlock}</td>
               </tr>
             )
           })}

@@ -1,59 +1,61 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { displayToken, shortenAddress, toAddressLink, toTxLink } from '../../utils';
 
-type Swap = {
-  tx_id: number
+type Event = {
+  txId: number
   block: string,
-  tx_hash: string,
-  event_name: string,
-  sender_address: string,
-  maker_address: string,
-  token0_in: string,
-  token1_in: string,
-  token0_out: string,
-  token1_out: string
+  txHash: string,
+  eventName: string,
+  senderAddress: string,
+  makerAddress: string,
+  token0In: string,
+  token0Out: string,
+  token1In: string,
+  token1Out: string
 };
 
 type Pair = {
-  token0_decimals: number,
-  token1_decimals: number
+  token0Symbol: string,
+  token0Decimals: number,
+  token1Symbol: string,
+  token1Decimals: number
 };
 
 const Home = () => {
   // const [nametags, setNametags] = useState({});
-  const [pairsData, setPairsData] = useState<Pair>({token0_decimals: 18, token1_decimals: 18});
-  const [swapsData, setSwapsData] = useState([]);
+  const [pairsData, setPairsData] = useState<Pair>({token0Symbol: ' ', token0Decimals: 18, token1Symbol: ' ', token1Decimals: 18});
+  const [eventsData, setEventsData] = useState([]);
 
-  const queryParams = new URLSearchParams(window.location.search);
-  const quote = queryParams.get('quote')?.toUpperCase()  || 'MARBLE';
-  const base = queryParams.get('base')?.toUpperCase() || 'WETH';
-  const pool = queryParams.get('pool')?.toUpperCase() || 'v2';
+  const queryParams = useSearchParams();
+  const chain = queryParams.get('chain') || 1;
+  const pair = queryParams.get('pair')?.toLowerCase() || '';
 
   useEffect(() => {
-    fetch(`http://localhost:5001/api/pairs?quote=${quote}&base=${base}&pool=${pool}`)
+    fetch(`http://localhost:5001/api/pair?chain=${chain}&pair=${pair}`)
       .then((response) => response.json())
       .then((data) => setPairsData(data))
       .catch((error) => console.error('Error fetching data:', error));
 
-    fetch(`http://localhost:5001/api/swaps?quote=${quote}&base=${base}&pool=${pool}`)
+    fetch(`http://localhost:5001/api/events?chain=${chain}&pair=${pair}`)
       .then((response) => response.json())
-      .then((data) => setSwapsData(data))
+      .then((data) => setEventsData(data))
       .catch((error) => console.error('Error fetching data:', error));
-  }, [quote, base, pool]);
+  }, [chain, pair]);
 
   type NameTags = Record<string, string>;
 
   // @TODO externalize to a table
   const nametags: NameTags = {
-    '0x66D0b8f1C539a395Fb402CC25adE893b109e187f': 'Banana Bot Router',
-    '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D': 'Uniswap V2 Router',
-    '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD': 'Uniswap Universal Router',
-    '0x3999D2c5207C06BBC5cf8A6bEa52966cabB76d41': 'Unibot',
-    '0x00000000003b3cc22aF3aE1EAc0440BcEe416B40': 'MEV Bot',
-    '0x92F3f71CeF740ED5784874B8C70Ff87ECdF33588': '1inch',
-    '0x1111111254EEB25477B68fb85Ed929f73A960582': '1inch Router',
+    '0x66d0b8f1c539a395fb402cc25ade893b109e187f': 'Banana Bot Router',
+    '0x7a250d5630b4cf539739df2c5dacb4c659f2488d': 'Uniswap V2 Router',
+    '0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad': 'Uniswap Universal Router',
+    '0x3999d2c5207c06bbc5cf8a6bea52966cabb76d41': 'Unibot',
+    '0x00000000003b3cc22af3ae1eac0440bcee416b40': 'MEV Bot',
+    '0x92f3f71cef740ed5784874b8c70ff87ecdf33588': '1inch',
+    '0x1111111254eeb25477b68fb85ed929f73a960582': '1inch Router',
   };
 
   function parseAddress(address: string) {
@@ -61,6 +63,7 @@ const Home = () => {
   }
 
   let prevTxHash: string = '';
+  const { token0Symbol, token0Decimals, token1Symbol, token1Decimals } = pairsData;
 
   return (
     <main className="flex min-h-screen flex-col justify-between p-24">
@@ -72,36 +75,35 @@ const Home = () => {
             <th>Contract</th>
             <th>Maker</th>
             <th>Event</th>
-            <th>{quote}</th>
-            <th>{base}</th>
+            <th>{token0Symbol}</th>
+            <th>{token1Symbol}</th>
           </tr>
         </thead>
         <tbody>
-          {swapsData.map((swap: Swap) => {
-            const { tx_id, block, tx_hash, event_name, sender_address, maker_address, token0_in, token0_out, token1_in, token1_out } = swap;
-            const { token0_decimals, token1_decimals } = pairsData;
-            const isSwap = event_name === 'Swap';
-            const isMint = event_name === 'Mint';
-            const isBurn = event_name === 'Burn';
-            const isBuy = (BigInt(swap.token0_out) > 0 && BigInt(swap.token1_in) > 0);
-            const isSameTx = prevTxHash === tx_hash;
-            prevTxHash = tx_hash;
+          {eventsData.map((event: Event) => {
+            const { txId, block, txHash, eventName, senderAddress, makerAddress, token0In, token0Out, token1In, token1Out } = event;
+            const isSwap = eventName === 'Swap';
+            const isMint = eventName === 'Mint';
+            const isBurn = eventName === 'Burn';
+            const isBuy = (BigInt(event.token0Out) > 0 && BigInt(event.token1In) > 0);
+            const isSameTx = prevTxHash === txHash;
+            prevTxHash = txHash;
 
             return (
-              <tr key={tx_id} className={`text-right ${isSameTx && 'text-red-200'}`}>
+              <tr key={txId} className={`text-right ${isSameTx && 'text-red-200'}`}>
                 <td>{block}</td>
-                <td><a href={toTxLink(tx_hash)} target='_blank'>{shortenAddress(tx_hash)}</a></td>
-                <td><a href={toAddressLink(sender_address)} target='_blank'>{parseAddress(sender_address)}</a></td>
-                <td><a href={toAddressLink(maker_address)} target='_blank'>{parseAddress(maker_address)}</a></td>
-                <td>{event_name}</td>
-                {isSwap && isBuy && (<td className='text-green-500'>{displayToken(token0_out, token0_decimals)}</td>)}
-                {isSwap && isBuy && (<td className='text-green-500'>{displayToken(token1_in, token1_decimals)}</td>)}
-                {isSwap && !isBuy && (<td className='text-red-500'>{displayToken(token0_in, token0_decimals)}</td>)}
-                {isSwap && !isBuy && (<td className='text-red-500'>{displayToken(token1_out, token1_decimals)}</td>)}
-                {isMint && (<td className='text-teal-300'>{displayToken(token0_in, token0_decimals)}</td>)}
-                {isMint && (<td className='text-teal-300'>{displayToken(token1_in, token1_decimals)}</td>)}
-                {isBurn && (<td className='text-indigo-300'>{displayToken(token0_out, token0_decimals)}</td>)}
-                {isBurn && (<td className='text-indigo-300'>{displayToken(token1_out, token1_decimals)}</td>)}
+                <td><a href={toTxLink(txHash)} target='_blank'>{shortenAddress(txHash)}</a></td>
+                <td><a href={toAddressLink(senderAddress)} target='_blank'>{parseAddress(senderAddress)}</a></td>
+                <td><a href={toAddressLink(makerAddress)} target='_blank'>{parseAddress(makerAddress)}</a></td>
+                <td>{eventName}</td>
+                {isSwap && isBuy && (<td className='text-green-500'>{displayToken(token0Out, token0Decimals)}</td>)}
+                {isSwap && isBuy && (<td className='text-green-500'>{displayToken(token1In, token1Decimals)}</td>)}
+                {isSwap && !isBuy && (<td className='text-red-500'>{displayToken(token0In, token0Decimals)}</td>)}
+                {isSwap && !isBuy && (<td className='text-red-500'>{displayToken(token1Out, token1Decimals)}</td>)}
+                {isMint && (<td className='text-teal-300'>{displayToken(token0In, token0Decimals)}</td>)}
+                {isMint && (<td className='text-teal-300'>{displayToken(token1In, token1Decimals)}</td>)}
+                {isBurn && (<td className='text-indigo-300'>{displayToken(token0Out, token0Decimals)}</td>)}
+                {isBurn && (<td className='text-indigo-300'>{displayToken(token1Out, token1Decimals)}</td>)}
               </tr>
             )
           })}

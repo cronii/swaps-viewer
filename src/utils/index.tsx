@@ -22,3 +22,12 @@ export function toTxLink(txHash: string) {
 export function toAddressLink(address: string) {
   return `https://etherscan.io/address/${address}`;
 }
+
+export function generateTwitterSearch(address: string) {
+  return `https://twitter.com/search?q=${address}&src=typed_query&f=live`;
+}
+
+// @TODO ETH CHAIN HARDCODED
+export function toDefinedLink(pairAddress: string) {
+  return <a href={`https://defined.fi/eth/${pairAddress}`} target='_blank'>{shortenAddress(pairAddress)}</a>
+}
