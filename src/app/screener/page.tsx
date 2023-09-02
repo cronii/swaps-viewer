@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { toDefinedLink, toTwitterSearch, toEtherscanContractLink, toEtherscanHolders } from '../utils';
-import { REMOTE } from '../../config';
+import { toDefinedLink, toTwitterSearch, toEtherscanContractLink, toEtherscanHolders } from '../../utils';
+import { REMOTE } from '../../../config';
 
 type Pair = {
   chainId: number,
@@ -43,7 +43,7 @@ const Home = () => {
           {pairsData.map((pair: Pair) => {
             const { chainId, pairAddress, token0, token0Symbol, token1Symbol, eventCount, buyTax, sellTax } = pair;
             const pairDisplayName = `${token0Symbol} / ${token1Symbol}`;
-            const pairLink = `/pair?chain=${chainId}&pair=${pairAddress}`;
+            const pairLink = `/screener/pair?chain=${chainId}&pair=${pairAddress}`;
 
             return (
               <tr key={pairAddress}>

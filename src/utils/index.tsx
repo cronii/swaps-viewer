@@ -23,11 +23,19 @@ export function toAddressLink(address: string) {
   return `https://etherscan.io/address/${address}`;
 }
 
-export function generateTwitterSearch(address: string) {
-  return `https://twitter.com/search?q=${address}&src=typed_query&f=live`;
+export function toTwitterSearch(address: string) {
+  return <a href={`https://twitter.com/search?q=${address}&src=typed_query&f=live`} target='_blank'>Twitter</a>
 }
 
 // @TODO ETH CHAIN HARDCODED
 export function toDefinedLink(pairAddress: string) {
-  return <a href={`https://defined.fi/eth/${pairAddress}`} target='_blank'>{shortenAddress(pairAddress)}</a>
+  return <a href={`https://defined.fi/eth/${pairAddress}`} target='_blank'>Defined</a>
+}
+
+export function toEtherscanContractLink(address: string) {
+  return <a href={`https://etherscan.io/address/${address}#code`} target='_blank'>Contract</a>
+}
+
+export function toEtherscanHolders(address: string) {
+  return <a href={`https://etherscan.io/token/${address}#balances`} target='_blank'>Holders</a>
 }
