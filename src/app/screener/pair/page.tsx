@@ -72,13 +72,13 @@ const Home = () => {
   const { token0Symbol, token0Decimals, token1Symbol, token1Decimals } = pairsData;
 
   return (
-    <main className="flex min-h-screen flex-col justify-between p-24 pt-0">
-      <div className='flex flex-col'>
+    <main className="flex flex-col justify-between p-24">
+      {/* <div className='flex flex-col'>
         <div>Uniswap V2: {token0Symbol} / {token1Symbol}</div>
         <div>Deployed: Ago</div>
         <div>Unique Wallets</div>
         <div>Performance Link</div>
-      </div>
+      </div> */}
       <div className=''>
         <table className='border-collapse	w-full'>
           <thead>
